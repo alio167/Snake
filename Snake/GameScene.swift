@@ -21,9 +21,12 @@ class GameScene: SKScene {
     
     // Declare the game objects
     var currentScore: SKLabelNode!
-    var playerPosition: [(Int, Int)] = []
+    var playerPositions: [(Int, Int)] = []
     var gameBG: SKShapeNode!
     var gameArray: [(node: SKShapeNode, x: Int, y: Int)] = []
+    
+    // Declare the target position
+    var targetPos: CGPoint?
     
     // This function is called once GameScene has loaded
     override func didMove(to view: SKView) {
@@ -31,14 +34,48 @@ class GameScene: SKScene {
         initializeMenu()
         
         // Initialize game
-        game = GameManager()
+        game = GameManager(scene: self)
         
         // Create the game view
         initializeGameView()
+        
+        // Recognize swipe right
+        let swipeRight: UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipeR))
+        swipeRight.direction = .right
+        view.addGestureRecognizer(swipeRight)
+
+        // Recognize swipe left
+        let swipeLeft: UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipeL))
+        swipeLeft.direction = .left
+        view.addGestureRecognizer(swipeLeft)
+
+        // Recognize swipe up
+        let swipeUp: UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipeU))
+        swipeUp.direction = .up
+        view.addGestureRecognizer(swipeUp)
+
+        // Recognize swipe down
+        let swipeDown: UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(swipeD))
+        swipeDown.direction = .down
+        view.addGestureRecognizer(swipeDown)
     }
     
+    @objc func swipeR() {
+        game.swipe(ID: 3)
+    }
+    @objc func swipeL() {
+        game.swipe(ID: 1)
+    }
+    @objc func swipeU() {
+        game.swipe(ID: 2)
+    }
+    @objc func swipeD() {
+        game.swipe(ID: 4)
+    }
+    
+    // This function is called before each frame is rendered.
     override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
+        game.update(time: currentTime)
     }
     
     // This function creates the game menu
@@ -57,7 +94,7 @@ class GameScene: SKScene {
         bestScore.zPosition = 1
         bestScore.position = CGPoint(x: 0, y: gameLogo.position.y - 50)
         bestScore.fontSize = 40
-        bestScore.text = "Best Score: 0"
+        bestScore.text = "Best Score: \(UserDefaults.standard.integer(forKey: "bestScore"))"
         bestScore.fontColor = SKColor.white
         self.addChild(bestScore)
         
@@ -118,6 +155,7 @@ class GameScene: SKScene {
             self.currentScore.isHidden = false
             self.gameBG.run(SKAction.scale(to: 1, duration: 0.4))
             self.currentScore.run(SKAction.scale(to: 1, duration: 0.4))
+            self.game.initGame()
         }
     }
     
